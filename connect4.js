@@ -84,7 +84,9 @@ class Game {
   /** endGame: announce game end */
 
   endGame(msg) {
-    alert(msg);
+    setTimeout(() => {
+      alert(msg);
+    }, 50);
   }
 
   /** handleClick: handle click of column top to play piece */
