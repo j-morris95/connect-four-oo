@@ -5,20 +5,23 @@
  * board fills (tie)
  */
 
-class game {
-  constructor(HEIGHT, WIDTH) {
+class Game {
+  constructor(p1, p2, HEIGHT, WIDTH) {
     this.HEIGHT = HEIGHT;
     this.WIDTH = WIDTH;
-    this.board = [];
-    this.currPlayer = 1;
+    this.p1 = p1;
+    this.p2 = p2;
+    this.currPlayer = p1;
     this.makeBoard();
     this.makeHtmlBoard();
+    this.gameOver = false;
   }
   /** makeBoard: create in-JS board structure:
    *   board = array of rows, each row is array of cells  (board[y][x])
    */
 
   makeBoard() {
+    this.board = [];
     for (let y = 0; y < this.HEIGHT; y++) {
       this.board.push(Array.from({ length: this.WIDTH }));
     }
@@ -27,6 +30,7 @@ class game {
 
   makeHtmlBoard() {
     const htmlBoard = document.getElementById("board");
+    htmlBoard.innerHTML = "";
 
     // make column tops (clickable area for adding a piece to that column)
     const top = document.createElement("tr");
@@ -70,7 +74,7 @@ class game {
   placeInTable(y, x) {
     const piece = document.createElement("div");
     piece.classList.add("piece");
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
     piece.style.top = -50 * (y + 2);
 
     const spot = document.getElementById(`${y}-${x}`);
@@ -86,6 +90,7 @@ class game {
   /** handleClick: handle click of column top to play piece */
 
   handleClick(evt) {
+    if (this.gameOver) return null;
     // get x from ID of clicked cell
     const x = +evt.target.id;
 
@@ -101,7 +106,7 @@ class game {
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      return this.endGame(`${this.currPlayer.color} wins!`);
     }
 
     // check for tie
@@ -110,7 +115,7 @@ class game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.p1 ? this.p2 : this.p1;
   }
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -162,6 +167,7 @@ class game {
 
         // find winner (only checking each win-possibility as needed)
         if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
+          this.gameOver = true;
           return true;
         }
       }
@@ -169,4 +175,24 @@ class game {
   }
 }
 
-new game(6, 7);
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
+document.querySelector("#start-button").addEventListener("click", () => {
+  const p1 = document.querySelector("#p1-color").value;
+  const p2 = document.querySelector("#p2-color").value;
+  if (!p1 && !p2) {
+    alert("Please enter colors for Player 1 and Player 2");
+    return;
+  } else if (!p1) {
+    alert("Please enter color for Player 1");
+    return;
+  } else if (!p2) {
+    alert("Please enter color for Player 2");
+    return;
+  }
+  new Game(new Player(p1), new Player(p2), 6, 7);
+});
